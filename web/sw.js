@@ -1,5 +1,5 @@
 // Offline cache for the app shell. Bump VERSION to force an update.
-const VERSION = "neon-holdem-v2";
+const VERSION = "neon-holdem-v3";
 const ASSETS = [
   "./",
   "index.html",
@@ -20,6 +20,7 @@ const ASSETS = [
   "textures/8BitDeck.png",
   "textures/chips.png",
   "textures/ui_assets.png",
+  "textures/Enhancers.png",
 ];
 
 self.addEventListener("install", (e) => {

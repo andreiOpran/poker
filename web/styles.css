@@ -194,23 +194,29 @@ body {
   --cw: 56px; width: var(--cw); height: calc(var(--cw) * 1.338); /* 190/142 */
   border-radius: calc(var(--cw) * .1); position: relative; flex: 0 0 auto;
 }
-/* Atlas 1846x760, 13 cols x 4 rows, cell 142x190. --col=rank-2, --row=suit. */
+/* Rank/suit art from 8BitDeck (1846x760, 13x4, cell 142x190) layered over the
+   white card-face tile from Enhancers (994x950, 7x5; face = col1,row0). */
 .card.sprite {
   --col: 0; --row: 0;
-  background-image: url("textures/8BitDeck.png");
-  background-repeat: no-repeat;
-  background-size: calc(var(--cw) * 13) calc(var(--cw) * 5.3521);
-  background-position: calc(var(--col) * var(--cw) * -1) calc(var(--row) * var(--cw) * -1.338);
+  background-image: url("textures/8BitDeck.png"), url("textures/Enhancers.png");
+  background-repeat: no-repeat, no-repeat;
+  background-size:
+    calc(var(--cw) * 13) calc(var(--cw) * 5.3521),
+    calc(var(--cw) * 7) calc(var(--cw) * 6.6901);
+  background-position:
+    calc(var(--col) * var(--cw) * -1) calc(var(--row) * var(--cw) * -1.338),
+    calc(var(--cw) * -1) 0;
   image-rendering: pixelated;
   filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .5));
 }
+/* Card back = red backside tile (col0,row0) from Enhancers. */
 .card.back {
-  background:
-    repeating-linear-gradient(45deg, #c0182f 0 7px, #97122472 7px 14px),
-    radial-gradient(120% 90% at 50% 0%, #d11a35, #8d0f22);
-  border: calc(var(--cw) * .07) solid #f3e3c0;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, .5), inset 0 0 0 2px #6b0a18;
+  background-image: url("textures/Enhancers.png");
+  background-repeat: no-repeat;
+  background-size: calc(var(--cw) * 7) calc(var(--cw) * 6.6901);
+  background-position: 0 0;
   image-rendering: pixelated;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .5));
 }
 .card.empty {
   background: rgba(255, 255, 255, .045);
