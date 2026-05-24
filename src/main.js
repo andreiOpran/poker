@@ -19,6 +19,13 @@ function goSetup() {
   show(setupScreen);
 }
 titleScreen.addEventListener("click", goSetup);
+titleScreen.addEventListener("touchstart", goSetup, {passive: true});
+const pressStartBtn = document.getElementById("press-start-btn");
+if (pressStartBtn) {
+  pressStartBtn.addEventListener("click", goSetup);
+  pressStartBtn.addEventListener("touchstart", goSetup, {passive: true});
+}
+
 document.addEventListener("keydown", (e) => {
   if (!titleScreen.classList.contains("active")) return;
   if (e.key === " " || e.key === "Enter") goSetup();
@@ -55,7 +62,7 @@ document.getElementById("setup-back").addEventListener("click", () => show(title
 const HI_KEY = "holdem.arcade.topStack";
 function refreshHiScore() {
   const v = +(localStorage.getItem(HI_KEY) || 0);
-  document.getElementById("hi-score").textContent = v ? v.toLocaleString("en-US") : "— —";
+  document.getElementById("hi-score").textContent = v ? v.toLocaleString("en-US") : "- -";
 }
 refreshHiScore();
 function recordTopStack(value) {

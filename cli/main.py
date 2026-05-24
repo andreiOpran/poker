@@ -8,9 +8,9 @@ from __future__ import annotations
 import random
 import sys
 
-from engine import PokerEngine
-from player import Player
-from ui import BOLD, CYAN, DIM, GREEN, RED, YELLOW, TerminalUI, c
+from cli.engine import PokerEngine
+from cli.player import Player
+from cli.ui import BOLD, CYAN, DIM, GREEN, RED, YELLOW, TerminalUI, c
 
 BOT_NAMES = ["Ace", "Boris", "Carmen", "Dakota", "Esra"]
 DIFFICULTIES = {"1": "easy", "2": "medium", "3": "hard"}

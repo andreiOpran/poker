@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 
-from cards import Card, RANK_TO_STR
+from cli.cards import Card, RANK_TO_STR
 
 # Hand category ranks, high is better.
 HIGH_CARD = 0

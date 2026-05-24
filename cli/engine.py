@@ -10,10 +10,10 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass, field
 
-from bot import Context, decide
-from cards import Card, Deck
-from evaluator import evaluate
-from player import Player
+from cli.bot import Context, decide
+from cli.cards import Card, Deck
+from cli.evaluator import evaluate
+from cli.player import Player
 
 
 @dataclass

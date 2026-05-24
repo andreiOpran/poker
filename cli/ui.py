@@ -11,8 +11,8 @@ import os
 import re
 import time
 
-from cards import Card
-from player import Player
+from cli.cards import Card
+from cli.player import Player
 
 _ANSI = re.compile(r"\x1b\[[0-9;]*m")
 _USE_COLOR = os.environ.get("NO_COLOR") is None

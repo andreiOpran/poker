@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from cards import Card
+from cli.cards import Card
 
 
 class Player:

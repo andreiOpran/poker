@@ -11,9 +11,9 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 
-from cards import Card, RANKS, SUITS
-from evaluator import evaluate
-from player import Player
+from cli.cards import Card, RANKS, SUITS
+from cli.evaluator import evaluate
+from cli.player import Player
 
 # Per-difficulty knobs.
 #   sims        : Monte Carlo samples (more = more accurate equity)

@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import random
 
-from cards import Card
-from engine import PokerEngine
-from evaluator import (FLUSH, FOUR_KIND, FULL_HOUSE, HIGH_CARD, ONE_PAIR,
+from cli.cards import Card
+from cli.engine import PokerEngine
+from cli.evaluator import (FLUSH, FOUR_KIND, FULL_HOUSE, HIGH_CARD, ONE_PAIR,
                        STRAIGHT, STRAIGHT_FLUSH, THREE_KIND, TWO_PAIR, evaluate)
-from player import Player
+from cli.player import Player
 
 _RANK = {"A": 14, "K": 13, "Q": 12, "J": 11, "T": 10,
          "9": 9, "8": 8, "7": 7, "6": 6, "5": 5, "4": 4, "3": 3, "2": 2}
@@ -94,7 +94,7 @@ def test_side_pots() -> None:
 
 def test_smoke_full_games() -> None:
     """Run many all-bot hands; assert no crash and chips are conserved."""
-    from ui import TerminalUI
+    from cli.ui import TerminalUI
 
     class NullUI(TerminalUI):
         def __init__(self):
