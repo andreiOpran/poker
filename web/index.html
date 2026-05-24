@@ -3,99 +3,163 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Neon Hold'em</title>
-  <meta name="description" content="Balatro-style Texas Hold'em vs bots." />
+  <title>HOLD'EM — Arcade Edition</title>
+  <meta name="description" content="Pixel-arcade Texas Hold'em vs bots." />
 
   <!-- PWA / iOS standalone -->
   <link rel="manifest" href="manifest.webmanifest" />
-  <meta name="theme-color" content="#06140e" />
+  <meta name="theme-color" content="#0a2018" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Neon Hold'em" />
-  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <meta name="apple-mobile-web-app-title" content="HOLD'EM" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@400;600;700;800&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=4" />
 </head>
-<body>
+<body data-crt="on" data-scanlines="on" data-vignette="on">
   <div id="app">
-    <!-- SETUP SCREEN -->
-    <section id="setup" class="screen active">
-      <div class="setup-card">
-        <h1 class="logo">NEON<br /><span>HOLD'EM</span></h1>
-        <p class="tagline">No-Limit Texas Hold'em · you vs the bots</p>
 
-        <div class="field">
-          <label>Starting chips</label>
-          <div class="seg" id="opt-chips" data-default="1000">
-            <button data-val="500">500</button>
-            <button data-val="1000" class="on">1K</button>
-            <button data-val="2500">2.5K</button>
-            <button data-val="5000">5K</button>
+    <!-- ========== TITLE SCREEN ========== -->
+    <section id="title" class="screen active" data-screen-label="01 Title">
+      <div class="cabinet-frame">
+        <div class="marquee">
+          <span class="bulb"></span><span class="bulb"></span><span class="bulb"></span>
+          <span class="marquee-text">★ TABLE OPEN ★ TABLE OPEN ★ TABLE OPEN ★</span>
+          <span class="bulb"></span><span class="bulb"></span><span class="bulb"></span>
+        </div>
+
+        <div class="title-stage">
+          <div class="title-mascot" aria-hidden="true"></div>
+
+          <h1 class="bigtitle">
+            <span class="bt-row bt-row-1">HOLD<span class="apos">'</span>EM</span>
+            <span class="bt-row bt-row-2">ARCADE</span>
+          </h1>
+
+          <div class="suits-row" aria-hidden="true">
+            <span class="suit suit-h"></span>
+            <span class="suit suit-d"></span>
+            <span class="suit suit-c"></span>
+            <span class="suit suit-s"></span>
+          </div>
+
+          <button id="press-start-btn" class="press-start">
+            <span class="ps-text">INSERT COIN TO PLAY</span>
+            <span class="ps-sub">▼ TAP ANYWHERE ▼</span>
+          </button>
+
+          <div class="hi-score">
+            <span class="hs-label">TOP STACK</span>
+            <span class="hs-val" id="hi-score">— —</span>
           </div>
         </div>
 
-        <div class="field">
-          <label>Opponents</label>
-          <div class="seg" id="opt-opponents" data-default="3">
-            <button data-val="1">1</button>
-            <button data-val="2">2</button>
-            <button data-val="3" class="on">3</button>
-            <button data-val="4">4</button>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Bot difficulty</label>
-          <div class="seg" id="opt-difficulty" data-default="medium">
-            <button data-val="easy">Easy</button>
-            <button data-val="medium" class="on">Medium</button>
-            <button data-val="hard">Hard</button>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Blinds</label>
-          <div class="seg" id="opt-blinds" data-default="med">
-            <button data-val="low">Low</button>
-            <button data-val="med" class="on">Normal</button>
-            <button data-val="high">High</button>
-          </div>
-          <div class="blinds-readout" id="blinds-readout">Blinds 10 / 20</div>
-        </div>
-
-        <button id="deal-btn" class="btn btn-gold btn-jumbo">DEAL ME IN</button>
+        <div class="copyright">© AMUSEMENT ONLY · NO WAGER</div>
       </div>
     </section>
 
-    <!-- TABLE SCREEN -->
-    <section id="table" class="screen">
+    <!-- ========== SETUP SCREEN ========== -->
+    <section id="setup" class="screen" data-screen-label="02 Setup">
+      <div class="setup-wrap">
+        <div class="setup-header">
+          <button id="setup-back" class="pixel-icon-btn" aria-label="Back">◄</button>
+          <div class="setup-title">SELECT GAME</div>
+          <div class="credit-counter"><span class="coin-dot"></span><span>1 CR</span></div>
+        </div>
+
+        <div class="setup-card">
+          <div class="field">
+            <label><span class="lbl-dot"></span>STARTING CHIPS</label>
+            <div class="seg" id="opt-chips" data-default="1000">
+              <button data-val="500">500</button>
+              <button data-val="1000" class="on">1K</button>
+              <button data-val="2500">2.5K</button>
+              <button data-val="5000">5K</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label><span class="lbl-dot"></span>OPPONENTS</label>
+            <div class="seg" id="opt-opponents" data-default="3">
+              <button data-val="1">1</button>
+              <button data-val="2">2</button>
+              <button data-val="3" class="on">3</button>
+              <button data-val="4">4</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label><span class="lbl-dot"></span>BOT SKILL</label>
+            <div class="seg" id="opt-difficulty" data-default="medium">
+              <button data-val="easy">EASY</button>
+              <button data-val="medium" class="on">MED</button>
+              <button data-val="hard">HARD</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label><span class="lbl-dot"></span>BLINDS</label>
+            <div class="seg" id="opt-blinds" data-default="med">
+              <button data-val="low">LOW</button>
+              <button data-val="med" class="on">NORM</button>
+              <button data-val="high">HIGH</button>
+            </div>
+            <div class="blinds-readout" id="blinds-readout">BLINDS  10 / 20</div>
+          </div>
+
+          <button id="deal-btn" class="btn btn-gold btn-jumbo">
+            <span class="btn-glyph">▶</span>DEAL ME IN
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TABLE SCREEN ========== -->
+    <section id="table" class="screen" data-screen-label="03 Table">
       <header class="topbar">
-        <button id="menu-btn" class="icon-btn" aria-label="Menu">☰</button>
-        <div class="hand-no" id="hand-no">Hand #1</div>
-        <div class="spacer"></div>
+        <button id="menu-btn" class="pixel-icon-btn" aria-label="Menu">☰</button>
+        <div class="hand-no" id="hand-no">HAND #1</div>
+        <div class="topbar-right">
+          <span class="pot-tally"><span class="coin-mini"></span><span id="topbar-pot">0</span></span>
+        </div>
       </header>
 
       <div class="felt">
         <div class="opponents" id="opponents"></div>
 
         <div class="center">
-          <div class="pot" id="pot"><span class="pot-chip"></span><span id="pot-val">0</span></div>
+          <div class="pot-cluster">
+            <div class="chip-pile" id="chip-pile" aria-hidden="true"></div>
+            <div class="pot" id="pot">
+              <span class="pot-chip"></span>
+              <span class="pot-label">POT</span>
+              <span id="pot-val">0</span>
+            </div>
+          </div>
           <div class="board" id="board"></div>
           <div class="banner" id="banner"></div>
         </div>
 
-        <div class="hero" id="hero"></div>
+        <div class="hero-wrap">
+          <div class="hero" id="hero"></div>
+        </div>
       </div>
 
       <div class="actionbar" id="actionbar"></div>
     </section>
 
-    <!-- OVERLAY (modals: rebuy, game over, menu) -->
+    <!-- ========== OVERLAY (modals) ========== -->
     <div id="overlay" class="overlay"></div>
+
+    <!-- ========== CRT EFFECT LAYER ========== -->
+    <div id="crt" class="crt-layer" aria-hidden="true">
+      <div class="crt-scan"></div>
+      <div class="crt-vignette"></div>
+      <div class="crt-grain"></div>
+    </div>
   </div>
 
   <script type="module" src="src/main.js"></script>

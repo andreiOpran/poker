@@ -1,4 +1,8 @@
 // Touch UI: renders the table and drives the engine generator.
+// Arcade overhaul — adds chip toss FX, blinking pixel avatars,
+// dealer mascot, topbar pot tally, and top-stack recording.
+
+import { buildTweaksBlock } from "./tweaks.js";
 
 function h(tag, props, ...kids) {
   const e = document.createElement(tag);
@@ -43,6 +47,38 @@ function bubbleClass(action) {
   return "";
 }
 
+/* ---------- Chip toss FX ---------- */
+const CHIP_VARIANTS = ["c-gold", "c-red", "c-blue", "c-green", "c-orange", "c-purple"];
+function tossChips(fromEl, toEl, count = 3) {
+  if (!fromEl || !toEl) return;
+  // Respect the user's tweak toggle.
+  if (typeof window.__tweakOn === "function" && !window.__tweakOn("chipToss")) return;
+
+  const a = fromEl.getBoundingClientRect();
+  const b = toEl.getBoundingClientRect();
+  const sx = a.left + a.width / 2;
+  const sy = a.top + a.height / 2;
+  const ex = b.left + b.width / 2;
+  const ey = b.top + b.height / 2;
+
+  for (let i = 0; i < count; i++) {
+    const c = document.createElement("div");
+    const variant = CHIP_VARIANTS[(i + Math.floor(Math.random() * 3)) % CHIP_VARIANTS.length];
+    c.className = "chip-toss " + variant;
+    const jitterX = (Math.random() - 0.5) * 18;
+    const jitterY = (Math.random() - 0.5) * 18;
+    c.style.left = (sx - 11 + jitterX) + "px";
+    c.style.top = (sy - 11 + jitterY) + "px";
+    c.style.setProperty("--tx", (ex - sx) + "px");
+    c.style.setProperty("--ty", (ey - sy) + "px");
+    const dur = 460 + Math.random() * 180;
+    const delay = i * 70;
+    c.style.animation = `chipTossFly ${dur}ms cubic-bezier(.4,.0,.6,1) ${delay}ms forwards`;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), dur + delay + 80);
+  }
+}
+
 export class Table {
   constructor(session, onQuit) {
     this.session = session;
@@ -52,6 +88,7 @@ export class Table {
     this.prevPot = 0;
     this.prevBoardLen = 0;
     this.animateHole = false;
+    this.playerEls = new Map(); // Player -> seat element
 
     this.elOpp = document.getElementById("opponents");
     this.elBoard = document.getElementById("board");
@@ -62,6 +99,8 @@ export class Table {
     this.elBar = document.getElementById("actionbar");
     this.elBanner = document.getElementById("banner");
     this.elOverlay = document.getElementById("overlay");
+    this.elTopbarPot = document.getElementById("topbar-pot");
+    this.elChipPile = document.getElementById("chip-pile");
 
     document.getElementById("menu-btn").onclick = () => this.menu();
   }
@@ -91,8 +130,17 @@ export class Table {
   handle(ev) {
     switch (ev.type) {
       case "deal": this.render(ev.state); this.animateHole = false; this.after(620); break;
-      case "blinds": this.render(ev.state); this.after(420); break;
-      case "action": this.render(ev.state); this.after(ev.player.isHuman ? 160 : 800); break;
+      case "blinds":
+        this.render(ev.state);
+        // Throw chips for SB / BB.
+        this.tossBlinds(ev.state);
+        this.after(420);
+        break;
+      case "action":
+        this.render(ev.state);
+        this.tossForAction(ev.player);
+        this.after(ev.player.isHuman ? 160 : 800);
+        break;
       case "street": this.render(ev.state); this.after(680); break;
       case "awaitHuman": this.render(ev.state, { activeHero: true }); this.showActions(ev.info); break;
       case "foldWin": this.render(ev.state); this.endBanner(ev); break;
@@ -105,18 +153,46 @@ export class Table {
     for (const a of awards) for (const w of a.winners) this.winnerIds.add(w);
   }
 
-  // ---------------- render ----------------
+  /* ---------- chip toss helpers ---------- */
+  potEl() { return this.elPot; }
+  seatElFor(p) { return this.playerEls.get(p); }
+  tossForAction(p) {
+    if (!p.lastAction) return;
+    const a = p.lastAction;
+    if (a.startsWith("FOLD") || a.startsWith("CHECK")) return;
+    const from = p.isHuman ? this.elHero : this.seatElFor(p);
+    const count = a.startsWith("ALL-IN") || a.startsWith("RAISE") ? 4 : 2;
+    tossChips(from, this.potEl(), count);
+  }
+  tossBlinds(state) {
+    const n = state.players.length;
+    const sbI = n === 2 ? state.button : (state.button + 1) % n;
+    const bbI = n === 2 ? (state.button + 1) % n : (state.button + 2) % n;
+    for (const i of [sbI, bbI]) {
+      const p = state.players[i];
+      const from = p.isHuman ? this.elHero : this.seatElFor(p);
+      tossChips(from, this.potEl(), i === sbI ? 1 : 2);
+    }
+  }
+
+  /* ---------- render ---------- */
   render(state, opts = {}) {
     const n = state.players.length;
     const sbI = n === 2 ? state.button : (state.button + 1) % n;
     const bbI = n === 2 ? (state.button + 1) % n : (state.button + 2) % n;
-    this.elHandNo.textContent = "Hand #" + state.handNo;
+    this.elHandNo.textContent = "HAND #" + state.handNo;
 
     // Opponents.
-    this.elOpp.replaceChildren(...state.players
+    this.playerEls.clear();
+    const oppEls = state.players
       .map((p, i) => [p, i])
       .filter(([p]) => !p.isHuman)
-      .map(([p, i]) => this.seat(state, p, i, sbI, bbI)));
+      .map(([p, i]) => {
+        const el = this.seat(state, p, i, sbI, bbI);
+        this.playerEls.set(p, el);
+        return el;
+      });
+    this.elOpp.replaceChildren(...oppEls);
 
     // Board.
     const board = state.community.map((card, i) =>
@@ -127,6 +203,9 @@ export class Table {
 
     // Pot.
     this.elPotVal.textContent = fmt(state.pot);
+    if (this.elTopbarPot) this.elTopbarPot.textContent = fmt(state.pot);
+    // Decorative chip pile hides when pot empty.
+    if (this.elChipPile) this.elChipPile.classList.toggle("empty", state.pot === 0);
     if (state.pot !== this.prevPot) {
       this.elPot.classList.remove("bump"); void this.elPot.offsetWidth; this.elPot.classList.add("bump");
       this.prevPot = state.pot;
@@ -148,11 +227,24 @@ export class Table {
     } else {
       mini.append(emptyEl(), emptyEl());
     }
-    const kids = [
+
+    // Per-bot eye color + blink delay + blink duration derived from name (stable, distinct).
+    const eyeColors = ["#ffe089", "#ff8a9b", "#8be8a8", "#8fc7ff", "#d6b8ff"];
+    const nameSum = [...p.name].reduce((a, c) => a + c.charCodeAt(0), 0);
+    const nameHash = [...p.name].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+    const eyeColor = eyeColors[nameSum % eyeColors.length];
+    const blinkDelay = ((nameHash % 3700) / 1000).toFixed(2);            // 0.0 – 3.7 s
+    const blinkDur = (3 + ((nameHash >> 8) % 2500) / 1000).toFixed(2);   // 3.0 – 5.5 s
+    const avatarStyle = `--blink-delay:${blinkDelay}s;--eye-color:${eyeColor};--blink-dur:${blinkDur}s`;
+
+    const frame = h("div", { class: "seat-frame" },
       mini,
+      h("div", { class: "avatar", style: avatarStyle }),
       h("div", { class: "name" }, p.name),
       h("div", { class: "stack" }, fmt(p.chips)),
-    ];
+    );
+
+    const kids = [frame];
     if (p.lastAction)
       kids.push(h("div", { class: "bubble " + bubbleClass(p.lastAction) }, p.lastAction));
     if (idx === state.button) kids.push(h("div", { class: "dealer-btn" }, "D"));
@@ -164,19 +256,23 @@ export class Table {
   heroBlock(state, active) {
     const human = this.session.human;
     const win = this.winnerIds.has(human);
+    const isButton = state.players[state.button] === human;
     const cards = h("div", { class: "hero-cards" },
       ...(human.hole.length
         ? human.hole.map((card, k) => cardEl(card, { anim: this.animateHole, delay: k * 90, win }))
         : [emptyEl(), emptyEl()]));
+    const nameEl = h("div", { class: "hero-name" + (win ? " winner" : "") },
+      human.name + (human.folded ? " · FOLDED" : ""));
+    if (isButton) nameEl.append(h("span", { class: "dealer-btn-hero" }, "D"));
     const info = h("div", { class: "hero-info" },
-      h("div", { class: "hero-name" + (win ? " winner" : "") }, human.name + (human.folded ? " · folded" : "")),
-      h("div", { class: "stack" }, fmt(human.chips) + " chips"),
-      human.lastAction ? h("div", { class: "bubble " + bubbleClass(human.lastAction), style: "position:static;align-self:flex-start" }, human.lastAction) : null,
+      nameEl,
+      h("div", { class: "stack" }, fmt(human.chips)),
+      human.lastAction ? h("div", { class: "bubble " + bubbleClass(human.lastAction), style: "position:static;align-self:flex-start;top:auto;right:auto" }, human.lastAction) : null,
     );
     return [cards, info];
   }
 
-  // ---------------- banners ----------------
+  /* ---------- banners ---------- */
   banner(big, sub) {
     this.elBanner.replaceChildren(h("div", { class: "banner-inner" },
       h("div", { class: "big" }, big), sub ? h("div", { class: "sub" }, sub) : null));
@@ -186,27 +282,27 @@ export class Table {
 
   showdownBanner(ev) {
     const top = ev.results[0];
-    this.banner("SHOWDOWN", `${top.player.name}: ${top.hand.name}`);
+    this.banner("★ SHOWDOWN ★", `${top.player.name.toUpperCase()} · ${top.hand.name.toUpperCase()}`);
   }
 
   endBanner(ev) {
     if (ev.type === "foldWin") {
-      this.banner(`${ev.winner.name} wins`, `${fmt(ev.amount)} · everyone folded`);
+      this.banner(`${ev.winner.name.toUpperCase()} WINS`, `${fmt(ev.amount)} · EVERYONE FOLDED`);
     } else {
       const parts = ev.awards.map(a => {
-        const names = a.winners.map(w => w.name).join(", ");
-        return a.winners.length > 1 ? `${names} split ${fmt(a.amount)}` : `${names} wins ${fmt(a.amount)}`;
+        const names = a.winners.map(w => w.name.toUpperCase()).join(", ");
+        return a.winners.length > 1 ? `${names} SPLIT ${fmt(a.amount)}` : `${names} WINS ${fmt(a.amount)}`;
       });
       this.banner(parts.length === 1 && ev.awards[0].winners.length === 1
-        ? `${ev.awards[0].winners[0].name} wins` : "Pot awarded", parts.join(" · "));
+        ? `${ev.awards[0].winners[0].name.toUpperCase()} WINS` : "POT AWARDED", parts.join(" · "));
     }
     this.bar(h("button", { class: "btn btn-gold btn-jumbo", onclick: () => { this.clearBanner(); this.pump(); } },
-      "NEXT HAND"));
+      h("span", { class: "btn-glyph" }, "▶"), "NEXT HAND"));
   }
 
-  // ---------------- action bar ----------------
+  /* ---------- action bar ---------- */
   bar(...children) { this.elBar.replaceChildren(...children); }
-  hideActions() { this.bar(h("div", { class: "waiting" }, "···")); }
+  hideActions() { this.bar(h("div", { class: "waiting" }, "· · ·  WAITING  · · ·")); }
 
   showActions(info) {
     const resolve = (resp) => { this.hideActions(); this.pump(resp); };
@@ -263,15 +359,19 @@ export class Table {
         h("span", { class: "lbl" }, canCheck ? "Bet to" : "Raise to"), amtEl),
       slider,
       h("div", { class: "raise-presets" },
-        preset("Min", minRaiseTo), preset("½ Pot", half), preset("Pot", full), preset("All-in", maxRaiseTo)),
+        preset("MIN", minRaiseTo), preset("½ POT", half), preset("POT", full), preset("ALL-IN", maxRaiseTo)),
       confirm,
     );
     setVal(minRaiseTo);
     return panel;
   }
 
-  // ---------------- end of hand / modals ----------------
+  /* ---------- end-of-hand / modals ---------- */
   afterHand() {
+    // Record top stack across the human's play
+    if (typeof window.__recordTopStack === "function") {
+      window.__recordTopStack(this.session.human.chips);
+    }
     const status = this.session.endHand();
     if (status.winner) return this.gameOver(status.winner);
     if (status.humanBroke) return this.rebuyModal();
@@ -287,40 +387,43 @@ export class Table {
   standings() {
     const rows = [...this.session.players].sort((a, b) => b.chips - a.chips).map(p =>
       h("div", { class: "row" + (p.chips === 0 ? " out" : "") + (p.isHuman ? " you" : "") },
-        h("span", { class: "nm" }, p.name + (p.chips === 0 ? " · out" : "")),
+        h("span", { class: "nm" }, p.name.toUpperCase() + (p.chips === 0 ? " · OUT" : "")),
         h("span", { class: "chips" }, fmt(p.chips))));
     return h("div", { class: "standings" }, ...rows);
   }
 
   rebuyModal() {
-    this.bar(h("div", { class: "waiting" }, "···"));
+    this.bar(h("div", { class: "waiting" }, "· · · BUSTED · · ·"));
     this.modal(
-      h("h2", { class: "lose" }, "Busted!"),
-      h("p", {}, "You're out of chips."),
+      h("h2", { class: "lose" }, "GAME OVER"),
+      h("p", {}, "You're out of chips. Insert coin to rebuy?"),
       this.standings(),
       h("button", { class: "btn btn-gold btn-jumbo", onclick: () => { this.session.rebuyHuman(); this.closeModal(); this.nextHand(); } },
-        "REBUY " + fmt(this.session.startingChips)),
+        h("span", { class: "btn-glyph" }, "◎"), "REBUY " + fmt(this.session.startingChips)),
       h("button", { class: "btn btn-ghost btn-jumbo", onclick: () => this.onQuit() }, "CASH OUT"),
     );
   }
 
   gameOver(winner) {
-    this.bar(h("div", { class: "waiting" }, "···"));
+    this.bar(h("div", { class: "waiting" }, "· · · GAME OVER · · ·"));
     const won = winner.isHuman;
     this.modal(
-      h("h2", { class: won ? "win" : "lose" }, won ? "🏆 YOU WIN" : "YOU'RE OUT"),
+      h("h2", { class: won ? "win" : "lose" }, won ? "★ YOU WIN ★" : "YOU'RE OUT"),
       h("p", {}, won ? "You took every chip on the table." : `${winner.name} cleaned up the table.`),
       this.standings(),
-      h("button", { class: "btn btn-gold btn-jumbo", onclick: () => this.onQuit() }, "NEW GAME"),
+      h("button", { class: "btn btn-gold btn-jumbo", onclick: () => this.onQuit() },
+        h("span", { class: "btn-glyph" }, "▶"), "NEW GAME"),
     );
   }
 
   menu() {
     this.modal(
-      h("h2", {}, "Paused"),
+      h("h2", { class: "paused" }, "PAUSED"),
       this.standings(),
-      h("button", { class: "btn btn-green btn-jumbo", onclick: () => this.closeModal() }, "RESUME"),
-      h("button", { class: "btn btn-ghost btn-jumbo", onclick: () => this.onQuit() }, "QUIT TO MENU"),
+      buildTweaksBlock(),
+      h("button", { class: "btn btn-green btn-jumbo", onclick: () => this.closeModal() },
+        h("span", { class: "btn-glyph" }, "▶"), "RESUME"),
+      h("button", { class: "btn btn-ghost btn-jumbo", onclick: () => this.onQuit() }, "QUIT TO TITLE"),
     );
   }
 }
