@@ -811,16 +811,17 @@ body[data-crt="on"] .crt-scan { animation: crtflicker 6s infinite; }
 /* Face card: rank/suit art from 8BitDeck atlas (1846x760, 13x4, cell 142x190) over a solid cream card face */
 .card.sprite {
   --col: 0; --row: 0;
-  background-color: var(--cream);
-  background-image: url("textures/8BitDeck.png");
-  background-repeat: no-repeat;
-  background-size: calc(var(--cw) * 13) calc(var(--cw) * 5.3521);
+  background-image: 
+    url("textures/8BitDeck.png"),
+    url("textures/Enhancers.png");
+  background-repeat: no-repeat, no-repeat;
+  background-size: 
+    calc(var(--cw) * 13) calc(var(--cw) * 5.3521),
+    calc(var(--cw) * 7) calc(var(--cw) * 6.6901);
   background-position:
-    calc(var(--col) * var(--cw) * -1) calc(var(--row) * var(--cw) * -1.338);
-  box-shadow:
-    inset 0 0 0 2px rgba(0, 0, 0, 0.15),
-    inset 0 0 0 3px var(--cream),
-    0 3px 0 rgba(0, 0, 0, 0.55);
+    calc(var(--col) * var(--cw) * -1) calc(var(--row) * var(--cw) * -1.338),
+    calc(var(--cw) * -1) 0;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.55);
   filter: none;
 }
 .card.back {
@@ -860,8 +861,8 @@ body[data-crt="on"] .crt-scan { animation: crtflicker 6s infinite; }
   to   { box-shadow: 0 4px 10px rgba(0,0,0,0.45), 0 0 26px var(--gold), 0 0 44px rgba(242, 193, 78, 0.5); transform: translateY(-4px); }
 }
 @keyframes winGlowSprite {
-  from { box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15), inset 0 0 0 3px var(--cream), 0 3px 0 rgba(0,0,0,0.55), 0 0 4px var(--gold); transform: translateY(0); }
-  to   { box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15), inset 0 0 0 3px var(--cream), 0 3px 0 rgba(0,0,0,0.55), 0 0 18px var(--gold), 0 0 36px rgba(242, 193, 78, 0.6); transform: translateY(-4px); }
+  from { box-shadow: 0 3px 0 rgba(0,0,0,0.55), 0 0 4px var(--gold); transform: translateY(0); }
+  to   { box-shadow: 0 3px 0 rgba(0,0,0,0.55), 0 0 18px var(--gold), 0 0 36px rgba(242, 193, 78, 0.6); transform: translateY(-4px); }
 }
 
 /* sizes */
