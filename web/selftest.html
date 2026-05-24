@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><link rel="stylesheet" href="styles.css"/></head>
+<body>
+  <pre id="status" style="position:fixed;z-index:999;color:#0f0;background:#000;font-size:11px;margin:0;padding:4px;max-width:100%;white-space:pre-wrap">RUNNING</pre>
+  <section id="setup" class="screen"></section>
+  <section id="table" class="screen active">
+    <header class="topbar"><button id="menu-btn" class="icon-btn">☰</button><div class="hand-no" id="hand-no"></div><div class="spacer"></div></header>
+    <div class="felt">
+      <div class="opponents" id="opponents"></div>
+      <div class="center">
+        <div class="pot" id="pot"><span class="pot-chip"></span><span id="pot-val">0</span></div>
+        <div class="board" id="board"></div>
+        <div class="banner" id="banner"></div>
+      </div>
+      <div class="hero" id="hero"></div>
+    </div>
+    <div class="actionbar" id="actionbar"></div>
+  </section>
+  <div id="overlay" class="overlay"></div>
+
+  <script type="module">
+    import { GameSession } from "./src/game.js";
+    import { Table } from "./src/ui.js";
+
+    const errors = [];
+    addEventListener("error", e => errors.push("err:" + e.message));
+    addEventListener("unhandledrejection", e => errors.push("rej:" + (e.reason?.message || e.reason)));
+    const status = document.getElementById("status");
+
+    let done = false, session, iv;
+    function finish(reason) {
+      if (done) return; done = true; clearInterval(iv);
+      const msg = `DONE reason=${reason} hands=${session.handNo} errors=${errors.length}` +
+        (errors.length ? " :: " + errors.join(" | ") : "");
+      status.textContent = msg; document.title = msg;
+    }
+
+    try {
+      session = new GameSession({ startingChips: 150, numOpponents: 2, difficulty: "easy", sb: 25, bb: 50, seed: 7 });
+      const table = new Table(session, () => finish("quit"));
+      table.start();
+
+      let ticks = 0;
+      iv = setInterval(() => {
+        if (++ticks > 200000) return finish("maxticks");
+        if (session.handNo > 40) return finish("handcap");
+        const overlay = document.getElementById("overlay");
+        if (overlay.classList.contains("show")) {
+          const btns = [...overlay.querySelectorAll("button")];
+          if (btns.find(b => /NEW GAME/i.test(b.textContent))) return finish("gameover");
+          const co = btns.find(b => /CASH OUT/i.test(b.textContent));
+          if (co) return co.click();
+          return btns[0]?.click();
+        }
+        const btns = [...document.getElementById("actionbar").querySelectorAll("button")];
+        if (!btns.length) return;
+        const next = btns.find(b => /NEXT HAND/i.test(b.textContent));
+        if (next) return next.click();
+        const cc = btns.find(b => /^(CALL|CHECK)/i.test(b.textContent));
+        (cc || btns[0]).click();
+      }, 4);
+    } catch (e) { errors.push("throw:" + e.message); finish("threw"); }
+  </script>
+</body></html>

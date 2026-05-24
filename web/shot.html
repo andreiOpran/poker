@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/></head>
+<body>
+  <section id="setup" class="screen"></section>
+  <section id="table" class="screen active">
+    <header class="topbar"><button id="menu-btn" class="icon-btn">☰</button><div class="hand-no" id="hand-no"></div><div class="spacer"></div></header>
+    <div class="felt">
+      <div class="opponents" id="opponents"></div>
+      <div class="center">
+        <div class="pot" id="pot"><span class="pot-chip"></span><span id="pot-val">0</span></div>
+        <div class="board" id="board"></div>
+        <div class="banner" id="banner"></div>
+      </div>
+      <div class="hero" id="hero"></div>
+    </div>
+    <div class="actionbar" id="actionbar"></div>
+  </section>
+  <div id="overlay" class="overlay"></div>
+
+  <script type="module">
+    import { GameSession } from "./src/game.js";
+    import { Table } from "./src/ui.js";
+    const session = new GameSession({ startingChips: 2500, numOpponents: 3, difficulty: "medium", sb: 25, bb: 50, seed: 11 });
+    const table = new Table(session, () => {});
+    table.start();
+    // Auto-call/check until the flop, then park on the human's decision.
+    let stop = false;
+    const iv = setInterval(() => {
+      if (stop) return;
+      const bar = [...document.querySelectorAll("#actionbar button")];
+      if (!bar.length) return;
+      const next = bar.find(b => /NEXT HAND/i.test(b.textContent));
+      if (next) return next.click();
+      const board = document.querySelectorAll("#board .card.face").length;
+      if (board >= 3) { stop = true; clearInterval(iv); return; }
+      const cc = bar.find(b => /^(CALL|CHECK)/i.test(b.textContent));
+      (cc || bar[0]).click();
+    }, 10);
+  </script>
+</body></html>

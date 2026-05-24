@@ -1,0 +1,11 @@
+{
+  "name": "neon-holdem",
+  "version": "1.0.0",
+  "description": "Balatro-style Texas Hold'em PWA — play vs bots on iPhone, touch-only.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "serve": "python3 -m http.server 8000",
+    "test": "node test.mjs"
+  }
+}
