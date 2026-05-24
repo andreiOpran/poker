@@ -170,11 +170,28 @@ body[data-crt="on"] .crt-scan { animation: crtflicker 6s infinite; }
 .marquee :last-child   { animation-delay: .6s; }
 @keyframes bulb { 0%,49%{opacity:1;} 50%,100%{opacity:0.3;} }
 
+.marquee-track {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+}
 .marquee-text {
   font-family: var(--display); font-size: 8px; color: var(--gold-hi);
-  letter-spacing: .15em; flex: 1; text-align: center;
+  letter-spacing: .15em;
   text-shadow: 0 0 6px rgba(242, 193, 78, 0.7);
-  white-space: nowrap; overflow: hidden;
+  white-space: nowrap;
+  display: inline-block;
+  flex: 0 0 auto;
+  animation: marqueeScroll 28s linear infinite;
+}
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
 }
 
 /* Title stage */
@@ -558,6 +575,18 @@ body[data-crt="on"] .crt-scan { animation: crtflicker 6s infinite; }
 }
 .seat .avatar::before { left: 8px; }
 .seat .avatar::after  { right: 8px; }
+/* Folded — eyes shut (visible horizontal line, no blinking) */
+.seat.folded .avatar::before,
+.seat.folded .avatar::after {
+  animation: none;
+  top: 10px;
+  width: 5px; height: 2px;
+  transform: none;
+  background: var(--eye-color, var(--gold-hi));
+  opacity: 0.7;
+  box-shadow: 0 0 3px var(--eye-color, var(--gold-hi));
+}
+
 @keyframes botBlink {
   0%, 92%, 100% { transform: scaleY(1); }
   94%, 98% { transform: scaleY(0.1); }
@@ -671,23 +700,37 @@ body[data-crt="on"] .crt-scan { animation: crtflicker 6s infinite; }
 }
 .chip-pile {
   position: relative;
-  width: 80px; height: 30px;
-  display: flex; justify-content: center; align-items: flex-end;
+  display: flex; align-items: flex-end; justify-content: center;
+  flex-wrap: nowrap;
+  gap: 3px;
+  height: 72px;
+  min-width: 30px;
+  margin-bottom: 2px;
+}
+.chip-pile .chip-col {
+  display: flex; flex-direction: column-reverse; align-items: center;
 }
 .chip-pile .chip {
-  width: 28px; height: 28px;
+  width: 24px; height: 24px;
   background-image: url("textures/chips.png");
   background-repeat: no-repeat;
-  background-size: 140px 56px;
+  background-size: 120px 48px;
+  margin-top: -21px;
   image-rendering: pixelated;
-  position: absolute;
-  filter: drop-shadow(0 2px 0 rgba(0,0,0,0.6));
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,0.55));
 }
-/* fan a few decorative chips */
-.chip-pile .chip:nth-child(1) { background-position: -56px -28px; left: 8px;  bottom: 0; }   /* gold */
-.chip-pile .chip:nth-child(2) { background-position: -28px   0;  left: 26px; bottom: 4px; }  /* red */
-.chip-pile .chip:nth-child(3) { background-position: -56px   0;  left: 44px; bottom: 0; }    /* green */
+.chip-pile .chip-col .chip:first-child { margin-top: 0; }
 .chip-pile.empty { opacity: 0; }
+.chip-pile .chip.c-white  { background-position:   0    0; }
+.chip-pile .chip.c-red    { background-position: -24px  0; }
+.chip-pile .chip.c-green  { background-position: -48px  0; }
+.chip-pile .chip.c-blue   { background-position: -72px  0; }
+.chip-pile .chip.c-black  { background-position: -96px  0; }
+.chip-pile .chip.c-purple { background-position:   0  -24px; }
+.chip-pile .chip.c-orange { background-position: -24px -24px; }
+.chip-pile .chip.c-gold   { background-position: -48px -24px; }
+.chip-pile .chip.c-amber  { background-position: -72px -24px; }
+.chip-pile .chip.c-star   { background-position: -96px -24px; }
 
 .pot {
   display: inline-flex; align-items: center; gap: 8px;

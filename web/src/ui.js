@@ -47,6 +47,58 @@ function bubbleClass(action) {
   return "";
 }
 
+/* ---------- Chip denominations (largest → smallest) ---------- */
+const CHIP_DENOMS = [
+  ["c-star",   100000],
+  ["c-amber",   25000],
+  ["c-gold",     5000],
+  ["c-orange",   1000],
+  ["c-purple",    500],
+  ["c-black",     100],
+  ["c-green",      25],
+  ["c-blue",       10],
+  ["c-red",         5],
+  ["c-white",       1],
+];
+const CHIP_STACK_CAP = 15;           // max visible chips per denomination stack
+
+/** Break a single bet/blind amount into chip-class names (largest first). */
+function chipsForAmount(amount) {
+  let r = Math.max(0, Math.floor(amount));
+  const out = [];
+  for (const [cls, value] of CHIP_DENOMS) {
+    while (r >= value) { out.push(cls); r -= value; }
+  }
+  return out;
+}
+
+/** Render an accumulated history of chip classes into the pile element.
+ *  Same-class chips collapse into one visual stack so a row of 20 reds shows
+ *  as a single tall red column, but they are NOT recombined into bigger denoms. */
+function renderChipPileFromHistory(el, history, isEmpty) {
+  if (!el) return;
+  el.classList.toggle("empty", !!isEmpty || history.length === 0);
+  if (isEmpty || history.length === 0) { el.replaceChildren(); return; }
+
+  const counts = new Map();
+  for (const cls of history) counts.set(cls, (counts.get(cls) || 0) + 1);
+  // Order columns by denomination (largest → smallest).
+  const ordered = CHIP_DENOMS.map(([cls]) => cls).filter(cls => counts.has(cls));
+  const cols = ordered.map(cls => {
+    const total = counts.get(cls);
+    const visible = Math.min(total, CHIP_STACK_CAP);
+    const col = document.createElement("div");
+    col.className = "chip-col";
+    for (let i = 0; i < visible; i++) {
+      const c = document.createElement("div");
+      c.className = "chip " + cls;
+      col.appendChild(c);
+    }
+    return col;
+  });
+  el.replaceChildren(...cols);
+}
+
 /* ---------- Chip toss FX ---------- */
 const CHIP_VARIANTS = ["c-gold", "c-red", "c-blue", "c-green", "c-orange", "c-purple"];
 function tossChips(fromEl, toEl, count = 3) {
@@ -89,6 +141,7 @@ export class Table {
     this.prevBoardLen = 0;
     this.animateHole = false;
     this.playerEls = new Map(); // Player -> seat element
+    this.chipHistory = [];      // accumulated chip-class names for this hand
 
     this.elOpp = document.getElementById("opponents");
     this.elBoard = document.getElementById("board");
@@ -99,7 +152,6 @@ export class Table {
     this.elBar = document.getElementById("actionbar");
     this.elBanner = document.getElementById("banner");
     this.elOverlay = document.getElementById("overlay");
-    this.elTopbarPot = document.getElementById("topbar-pot");
     this.elChipPile = document.getElementById("chip-pile");
 
     document.getElementById("menu-btn").onclick = () => this.menu();
@@ -111,6 +163,8 @@ export class Table {
     this.reveal = false;
     this.winnerIds.clear();
     this.prevBoardLen = 0;
+    this.prevPot = 0;
+    this.chipHistory = [];
     this.clearBanner();
     this.gen = this.session.beginHand();
     this.animateHole = true;
@@ -139,7 +193,7 @@ export class Table {
       case "action":
         this.render(ev.state);
         this.tossForAction(ev.player);
-        this.after(ev.player.isHuman ? 160 : 800);
+        this.after(ev.player.isHuman ? 160 : 1200 + Math.floor(Math.random() * 1100));
         break;
       case "street": this.render(ev.state); this.after(680); break;
       case "awaitHuman": this.render(ev.state, { activeHero: true }); this.showActions(ev.info); break;
@@ -201,11 +255,11 @@ export class Table {
     this.elBoard.replaceChildren(...board);
     this.prevBoardLen = state.community.length;
 
-    // Pot.
+    // Pot: accumulate chip-class history from the pot delta, then render.
+    const delta = state.pot - this.prevPot;
+    if (delta > 0) this.chipHistory.push(...chipsForAmount(delta));
+    renderChipPileFromHistory(this.elChipPile, this.chipHistory, state.pot === 0);
     this.elPotVal.textContent = fmt(state.pot);
-    if (this.elTopbarPot) this.elTopbarPot.textContent = fmt(state.pot);
-    // Decorative chip pile hides when pot empty.
-    if (this.elChipPile) this.elChipPile.classList.toggle("empty", state.pot === 0);
     if (state.pot !== this.prevPot) {
       this.elPot.classList.remove("bump"); void this.elPot.offsetWidth; this.elPot.classList.add("bump");
       this.prevPot = state.pot;
