@@ -18,7 +18,7 @@
   --card-ink: #15181c;
   --card-red: #d8324a;
   --pill: rgba(0, 0, 0, .42);
-  --display: "Bungee", "Outfit", system-ui, sans-serif;
+  --display: "Pixelify Sans", "Bungee", "Outfit", system-ui, sans-serif;
   --body: "Outfit", system-ui, -apple-system, sans-serif;
 }
 
@@ -134,7 +134,7 @@ body {
   width: 78px; transition: opacity .3s, transform .3s;
 }
 .seat.folded { opacity: .4; }
-.seat .mini-cards { display: flex; gap: 3px; height: calc(38px * 1.4); }
+.seat .mini-cards { display: flex; gap: 3px; height: calc(40px * 1.338); }
 .seat .name { font-weight: 800; font-size: 12.5px; max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .seat.active-turn { transform: translateY(-3px); }
 .seat.active-turn .name { color: var(--gold); text-shadow: 0 0 10px rgba(255, 204, 51, .6); }
@@ -169,61 +169,65 @@ body {
   border-radius: 999px; padding: 6px 16px 6px 10px;
   box-shadow: 0 0 22px rgba(255, 204, 51, .18), inset 0 1px 0 rgba(255, 255, 255, .08);
 }
-.pot .pot-chip {
-  width: 18px; height: 18px; border-radius: 50%;
-  background: repeating-conic-gradient(var(--gold) 0 30deg, #c89200 30deg 60deg);
-  border: 2px solid #fff3c4; box-shadow: 0 0 8px var(--gold);
+.pot .pot-chip { /* gold chip from chips.png (290x116, cell 58, col2 row1) */
+  width: 24px; height: 24px;
+  background-image: url("textures/chips.png");
+  background-repeat: no-repeat;
+  background-size: 120px 48px;
+  background-position: -48px -24px;
+  image-rendering: pixelated;
 }
 .pot.bump { animation: bump .4s var(--spring); }
 .board { display: flex; gap: 7px; }
 
 /* hero */
-.hero { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 6px 0 2px; }
+.hero { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 6px 0 2px; }
 .hero .hero-cards { display: flex; gap: 8px; }
-.hero .hero-info { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.hero .hero-info { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-width: 0; }
 .hero .hero-name { font-weight: 800; font-size: 15px; }
 .hero .hero-name.winner { color: var(--gold); text-shadow: 0 0 12px var(--gold); }
 .hero .stack { font-size: 16px; padding: 4px 12px; }
 .hero.active-turn { filter: drop-shadow(0 0 10px rgba(255, 204, 51, .35)); }
 
-/* ---------------- CARDS ---------------- */
+/* ---------------- CARDS (Balatro 8BitDeck sprite) ---------------- */
 .card {
-  --cw: 56px; width: var(--cw); height: calc(var(--cw) * 1.4);
-  border-radius: calc(var(--cw) * .14); position: relative; flex: 0 0 auto;
-  font-weight: 800;
+  --cw: 56px; width: var(--cw); height: calc(var(--cw) * 1.338); /* 190/142 */
+  border-radius: calc(var(--cw) * .1); position: relative; flex: 0 0 auto;
 }
-.card.face {
-  background: linear-gradient(160deg, var(--card-face) 0%, var(--card-face-2) 100%);
-  color: var(--card-ink);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(0, 0, 0, .12), inset 0 1px 0 rgba(255, 255, 255, .7);
+/* Atlas 1846x760, 13 cols x 4 rows, cell 142x190. --col=rank-2, --row=suit. */
+.card.sprite {
+  --col: 0; --row: 0;
+  background-image: url("textures/8BitDeck.png");
+  background-repeat: no-repeat;
+  background-size: calc(var(--cw) * 13) calc(var(--cw) * 5.3521);
+  background-position: calc(var(--col) * var(--cw) * -1) calc(var(--row) * var(--cw) * -1.338);
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .5));
 }
-.card.face.red { color: var(--card-red); }
-.card .corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: .9; font-size: calc(var(--cw) * .26); }
-.card .corner.tl { top: calc(var(--cw) * .08); left: calc(var(--cw) * .1); }
-.card .corner.br { bottom: calc(var(--cw) * .08); right: calc(var(--cw) * .1); transform: rotate(180deg); }
-.card .corner .s { font-size: calc(var(--cw) * .22); }
-.card .pip { position: absolute; inset: 0; display: grid; place-items: center; font-size: calc(var(--cw) * .56); opacity: .92; }
 .card.back {
   background:
-    repeating-linear-gradient(45deg, #0f3a55 0 8px, #0c2c42 8px 16px),
-    linear-gradient(160deg, #134d6e, #0a2236);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, .45), inset 0 0 0 2px rgba(52, 231, 211, .35), inset 0 0 18px rgba(52, 231, 211, .15);
-}
-.card.back::after {
-  content: "♠"; position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: calc(var(--cw) * .5); color: rgba(52, 231, 211, .5); text-shadow: 0 0 10px rgba(52, 231, 211, .6);
+    repeating-linear-gradient(45deg, #c0182f 0 7px, #97122472 7px 14px),
+    radial-gradient(120% 90% at 50% 0%, #d11a35, #8d0f22);
+  border: calc(var(--cw) * .07) solid #f3e3c0;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .5), inset 0 0 0 2px #6b0a18;
+  image-rendering: pixelated;
 }
 .card.empty {
-  background: rgba(255, 255, 255, .035); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .045);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .12);
 }
-.card.empty::after { content: ""; }
 .card.deal-anim { animation: dealIn .42s var(--spring) both; }
 .card.win { animation: winGlow 1s ease-in-out infinite alternate; z-index: 2; }
+.card.sprite.win { animation: winGlowSprite 1s ease-in-out infinite alternate; }
+@keyframes winGlowSprite {
+  from { filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .5)) drop-shadow(0 0 2px var(--gold)); transform: translateY(0); }
+  to   { filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .5)) drop-shadow(0 0 9px var(--gold)) drop-shadow(0 0 18px rgba(255, 200, 58, .65)); transform: translateY(-4px); }
+}
 
 /* sizes */
-.mini-cards .card { --cw: 38px; }
-.board .card { --cw: clamp(46px, 12.5vw, 60px); }
-.hero-cards .card { --cw: clamp(72px, 22vw, 96px); }
+.mini-cards .card { --cw: 40px; }
+.board .card { --cw: clamp(50px, 13.5vw, 64px); }
+.hero-cards .card { --cw: clamp(70px, 21vw, 92px); }
 
 /* ---------------- ACTION BAR ---------------- */
 .actionbar {

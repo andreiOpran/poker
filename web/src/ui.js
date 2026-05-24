@@ -17,13 +17,13 @@ function h(tag, props, ...kids) {
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const fmt = (n) => n.toLocaleString("en-US");
 
+// 8BitDeck.png atlas: rows = ♥0 ♣1 ♦2 ♠3, cols = ranks 2..A (col = rank-2).
+const SUIT_ROW = { h: 0, c: 1, d: 2, s: 3 };
 function cardEl(card, { anim = false, delay = 0, win = false } = {}) {
-  const cls = ["card", "face", card.isRed ? "red" : "", anim ? "deal-anim" : "", win ? "win" : ""].join(" ");
-  const e = h("div", { class: cls.trim() },
-    h("div", { class: "corner tl" }, h("span", { class: "r" }, card.rankStr), h("span", { class: "s" }, card.glyph)),
-    h("div", { class: "pip" }, card.glyph),
-    h("div", { class: "corner br" }, h("span", { class: "r" }, card.rankStr), h("span", { class: "s" }, card.glyph)),
-  );
+  const e = h("div", {
+    class: "card sprite" + (anim ? " deal-anim" : "") + (win ? " win" : ""),
+    style: `--col:${card.rank - 2};--row:${SUIT_ROW[card.suit]}`,
+  });
   if (anim) e.style.animationDelay = delay + "ms";
   return e;
 }
