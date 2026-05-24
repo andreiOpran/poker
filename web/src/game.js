@@ -5,7 +5,12 @@ import { PokerEngine } from "./engine.js";
 import { Player } from "./player.js";
 import { makeRng } from "./cards.js";
 
-const BOT_NAMES = ["Ace", "Boris", "Carmen", "Dakota"];
+const BOT_NAMES = [
+  "Ace", "Boris", "Carmen", "Dakota", "Echo", "Fargo", "Gus", "Hilda",
+  "Iggy", "Jules", "Kip", "Lola", "Mojo", "Nova", "Otto", "Pippa",
+  "Quinn", "Rex", "Silas", "Trixie", "Uma", "Vance", "Wren", "Xeno",
+  "Yuri", "Zane", "Andrei"
+];
 
 export class GameSession {
   constructor({ startingChips, numOpponents, difficulty, sb, bb, seed }) {
@@ -15,9 +20,17 @@ export class GameSession {
     this.rng = makeRng(seed);
     this.engine = new PokerEngine(this.rng);
 
+    const availableNames = [...BOT_NAMES];
+    for (let c = availableNames.length - 1; c > 0; c--) {
+      const b = Math.floor(this.rng() * (c + 1));
+      const t = availableNames[c];
+      availableNames[c] = availableNames[b];
+      availableNames[b] = t;
+    }
+
     this.players = [new Player("You", startingChips, true)];
     for (let i = 0; i < numOpponents; i++)
-      this.players.push(new Player(BOT_NAMES[i], startingChips, false, difficulty));
+      this.players.push(new Player(availableNames[i], startingChips, false, difficulty));
 
     this.human = this.players[0];
     this.dealerAbs = Math.floor(this.rng() * this.players.length);

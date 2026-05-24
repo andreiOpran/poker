@@ -341,14 +341,20 @@ export class Table {
 
   endBanner(ev) {
     if (ev.type === "foldWin") {
-      this.banner(`${ev.winner.name.toUpperCase()} WINS`, `${fmt(ev.amount)} · EVERYONE FOLDED`);
+      const verb = ev.winner.isHuman ? "WIN" : "WINS";
+      this.banner(`${ev.winner.name.toUpperCase()} ${verb}`, `${fmt(ev.amount)} · EVERYONE FOLDED`);
     } else {
       const parts = ev.awards.map(a => {
         const names = a.winners.map(w => w.name.toUpperCase()).join(", ");
-        return a.winners.length > 1 ? `${names} SPLIT ${fmt(a.amount)}` : `${names} WINS ${fmt(a.amount)}`;
+        const verb = (a.winners.length === 1 && a.winners[0].isHuman) ? "WIN" : "WINS";
+        return a.winners.length > 1 ? `${names} SPLIT ${fmt(a.amount)}` : `${names} ${verb} ${fmt(a.amount)}`;
       });
-      this.banner(parts.length === 1 && ev.awards[0].winners.length === 1
-        ? `${ev.awards[0].winners[0].name.toUpperCase()} WINS` : "POT AWARDED", parts.join(" · "));
+      let title = "POT AWARDED";
+      if (parts.length === 1 && ev.awards[0].winners.length === 1) {
+        const w = ev.awards[0].winners[0];
+        title = `${w.name.toUpperCase()} ${w.isHuman ? "WIN" : "WINS"}`;
+      }
+      this.banner(title, parts.join(" · "));
     }
     this.bar(h("button", { class: "btn btn-gold btn-jumbo", onclick: () => { this.clearBanner(); this.pump(); } },
       h("span", { class: "btn-glyph" }, "▶"), "NEXT HAND"));

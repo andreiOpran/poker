@@ -1,7 +1,7 @@
 {
-  "name": "neon-holdem",
+  "name": "retro-holdem",
   "version": "1.0.0",
-  "description": "Balatro-style Texas Hold'em PWA — play vs bots on iPhone, touch-only.",
+  "description": "Balatro-style Texas Hold'em PWA - play vs bots on iPhone, touch-only.",
   "type": "module",
   "private": true,
   "scripts": {

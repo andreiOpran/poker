@@ -452,9 +452,9 @@ body[data-crt="on"] .crt-scan { animation: crtflicker 6s infinite; }
 
 /* Pixel icon button (top-left back/menu) */
 .pixel-icon-btn {
-  width: 40px; height: 40px;
+  width: 34px; height: 34px;
   background: linear-gradient(180deg, #16432d, #0a2818);
-  color: var(--gold); font-size: 14px; border: 0;
+  color: var(--gold); font-size: 12px; border: 0;
   font-family: var(--display);
   cursor: pointer;
   box-shadow:
@@ -498,13 +498,15 @@ body[data-crt="on"] .crt-scan { animation: crtflicker 6s infinite; }
   position: relative;
 }
 .hand-no {
-  flex: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
   font-family: var(--display); font-size: 11px;
   color: var(--gold-hi); letter-spacing: .12em;
   text-shadow: 0 2px 0 var(--gold-dd);
 }
-.topbar-right { display: flex; align-items: center; }
+.topbar-right { display: flex; align-items: center; margin-left: auto; }
 .pot-tally {
   display: flex; align-items: center; gap: 6px;
   font-family: var(--mono); font-size: 18px; color: var(--gold);
@@ -715,11 +717,11 @@ body[data-crt="on"] .crt-scan { animation: crtflicker 6s infinite; }
   background-image: url("textures/chips.png");
   background-repeat: no-repeat;
   background-size: 120px 48px;
-  margin-top: -21px;
+  margin-bottom: -21px;
   image-rendering: pixelated;
   filter: drop-shadow(0 1px 0 rgba(0,0,0,0.55));
 }
-.chip-pile .chip-col .chip:first-child { margin-top: 0; }
+.chip-pile .chip-col .chip:first-child { margin-bottom: 0; }
 .chip-pile.empty { opacity: 0; }
 .chip-pile .chip.c-white  { background-position:   0    0; }
 .chip-pile .chip.c-red    { background-position: -24px  0; }

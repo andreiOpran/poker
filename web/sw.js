@@ -1,5 +1,5 @@
 // Offline cache for the app shell. Bump VERSION to force an update.
-const VERSION = "neon-holdem-v4-arcade";
+const VERSION = "retro-holdem-v4-arcade";
 const ASSETS = [
   "./",
   "index.html",
